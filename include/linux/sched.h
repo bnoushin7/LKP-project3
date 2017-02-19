@@ -2653,8 +2653,8 @@ struct casio_event_log{
 	unsigned long lines;
 	unsigned long cursor;
 };
-void init_casio_event_log();
-struct casio_event_log * get_casio_event_log();
+void init_casio_event_log(void);
+struct casio_event_log * get_casio_event_log(void);
 void register_casio_event(unsigned long long t, char *m, int a);
 
 #endif
