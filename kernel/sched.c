@@ -121,7 +121,11 @@
 
 static inline int rt_policy(int policy)
 {
-	if (unlikely(policy == SCHED_FIFO || policy == SCHED_RR))
+	if (unlikely(policy == SCHED_FIFO || policy == SCHED_RR)
+#ifdef CONFIG_SCHED_RMS_POLICY		
+	|| unlikely(policy == SCHED_RMS)		
+#endif
+)
 		return 1;
 	return 0;
 }
@@ -516,6 +520,22 @@ static struct root_domain def_root_domain;
 
 #endif
 
+
+#ifdef CONFIG_SCHED_RMS_POLICY		
+struct rms_task {		
+	struct rb_node rms_rb_node;		
+	unsigned long long period; /* next_period? */		
+	struct list_head rms_list_node;		
+	struct task_struct *task;		
+};		
+struct rms_rq {		
+	struct rb_root rms_rb_root;		
+	struct list_head rms_list_head;		
+	atomic_t nr_running;		
+};		
+#endif
+
+
 /*
  * This is the main, per-CPU runqueue data structure.
  *
@@ -524,6 +544,10 @@ static struct root_domain def_root_domain;
  * acquire operations must be ordered by ascending &runqueue.
  */
 struct rq {
+
+#ifdef CONFIG_SCHED_RMS_POLICY		
+	struct rms_rq rms_rq;		
+#endif
 	/* runqueue lock: */
 	spinlock_t lock;
 
@@ -1852,6 +1876,18 @@ static inline void __set_task_cpu(struct task_struct *p, unsigned int cpu)
 #ifdef CONFIG_SCHED_DEBUG
 # include "sched_debug.c"
 #endif
+
+#ifdef	CONFIG_SCHED_RMS_POLICY		
+# include "sched_rms.c"		
+#endif
+
+
+#ifdef CONFIG_SCHED_RMS_POLICY
+	#define sched_class_highest (&RMS_sched_class)		
+#else		
+	#define sched_class_highest (&rt_sched_class)		
+#endif
+
 
 #define sched_class_highest (&rt_sched_class)
 #define for_each_class(class) \
@@ -6333,6 +6369,13 @@ __setscheduler(struct rq *rq, struct task_struct *p, int policy, int prio)
 	case SCHED_RR:
 		p->sched_class = &rt_sched_class;
 		break;
+
+#ifdef CONFIG_SCHED_RMS_POLICY		
+	case SCHED_RMS:		
+		p->sched_class = &rms_sched_class;		
+		break;		
+#endif
+
 	}
 
 	p->rt_priority = prio;
@@ -6380,7 +6423,10 @@ recheck:
 
 		if (policy != SCHED_FIFO && policy != SCHED_RR &&
 				policy != SCHED_NORMAL && policy != SCHED_BATCH &&
-				policy != SCHED_IDLE)
+				policy != SCHED_IDLE
+#ifdef CONFIG_SCHED_RMS_POLICY		
+				&& policy !=SCHED_RMS	
+#endif)
 			return -EINVAL;
 	}
 
@@ -6433,6 +6479,13 @@ recheck:
 			return -EPERM;
 	}
 
+#ifdef CONFIG_SCHED_RMS_POLICY		
+	if(policy==SCHED_RMS){		
+		p->period = param->period;		
+		p->rms_id = param->rms_id;		
+	}		
+#endif
+
 	if (user) {
 #ifdef CONFIG_RT_GROUP_SCHED
 		/*
@@ -6478,6 +6531,14 @@ recheck:
 
 	oldprio = p->prio;
 	prev_class = p->sched_class;
+
+			
+#ifdef CONFIG_SCHED_RMS_POLICY		
+       if(policy == SCHED_RMS){		
+               add_RMS_task_2_list(&rq->rms_rq, p);		
+       }		
+#endif
+
 	__setscheduler(rq, p, policy, param->sched_priority);
 
 	if (running)
@@ -9607,6 +9668,13 @@ void __init sched_init(void)
 		init_task_group.shares = init_task_group_load;
 		INIT_LIST_HEAD(&rq->leaf_cfs_rq_list);
 #ifdef CONFIG_CGROUP_SCHED
+
+#ifdef CONFIG_SCHED_RMS_POLICY		
+	init_rms_rq(&rq->rms_rq);		
+#endif
+
+
+
 		/*
 		 * How much cpu bandwidth does init_task_group get?
 		 *
