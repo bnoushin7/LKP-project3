@@ -38,7 +38,7 @@ void add_rms_task_2_list(struct rms_rq *rq, struct task_struct *p)
 				if(rms_task){
 
 					if(new->task->rms_id < rms_task->task->rms_id){
-1
+
 						list_add(&new->rms_list_node,ptr);
 
 					}
@@ -100,7 +100,7 @@ struct rms_task * find_rms_task_list(struct rms_rq *rq, struct task_struct *p)
 
 }
 
-void rem_rem_task_list(struct rms_rq *rq, struct task_struct *p)
+void rem_rms_task_list(struct rms_rq *rq, struct task_struct *p)
 
 {
 
@@ -452,7 +452,7 @@ static const struct sched_class rms_sched_class = {
 
 	.set_curr_task          = set_curr_task_rms,
 
-	.task_tick		= task_tick_ms,
+	.task_tick		= task_tick_rms,
 
 
 

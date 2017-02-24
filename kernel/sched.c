@@ -1883,13 +1883,11 @@ static inline void __set_task_cpu(struct task_struct *p, unsigned int cpu)
 
 
 #ifdef CONFIG_SCHED_RMS_POLICY
-	#define sched_class_highest (&RMS_sched_class)		
+	#define sched_class_highest (&rms_sched_class)		
 #else		
 	#define sched_class_highest (&rt_sched_class)		
 #endif
 
-
-#define sched_class_highest (&rt_sched_class)
 #define for_each_class(class) \
    for (class = sched_class_highest; class; class = class->next)
 
@@ -6426,7 +6424,8 @@ recheck:
 				policy != SCHED_IDLE
 #ifdef CONFIG_SCHED_RMS_POLICY		
 				&& policy !=SCHED_RMS	
-#endif)
+#endif
+)
 			return -EINVAL;
 	}
 
@@ -6535,7 +6534,7 @@ recheck:
 			
 #ifdef CONFIG_SCHED_RMS_POLICY		
        if(policy == SCHED_RMS){		
-               add_RMS_task_2_list(&rq->rms_rq, p);		
+               add_rms_task_2_list(&rq->rms_rq, p);		
        }		
 #endif
 
