@@ -5594,6 +5594,9 @@ asmlinkage void __sched schedule(void)
 	unsigned long *switch_count;
 	struct rq *rq;
 	int cpu;
+#ifdef CONFIG_SCHED_RMS_POLICY
+    char msg[RMS_MSG_SIZE];
+#endif
 
 need_resched:
 	preempt_disable();
@@ -5631,6 +5634,21 @@ need_resched_nonpreemptible:
 	put_prev_task(rq, prev);
 	next = pick_next_task(rq);
 
+#ifdef CONFIG_SCHED_RMS_POLICY
+    if (prev->policy == SCHED_RMS || next->policy == SCHED_RMS) {
+        if (prev->policy == SCHED_RMS && next->policy == SCHED_RMS) {
+            snprintf(msg, RMS_MSG_SIZE, "prev: %d, next: (%d)", prev->pid,
+                     next->pid);
+        } else if (prev->policy == SCHED_RMS) {
+            snprintf(msg, RMS_MSG_SIZE, "prev: %d, next: (%d)", prev->pid,
+                     next->pid);
+        } else {
+            snprintf(msg, RMS_MSG_SIZE, "prev: %d, next: (%d)", prev->pid,
+                     next->pid);
+        }
+        register_rms_event(sched_clock(), msg, RMS_CONTEXT_SWITCH);
+    }
+#endif
 	if (likely(prev != next)) {
 		sched_info_switch(prev, next);
 		perf_event_task_sched_out(prev, next, cpu);
@@ -9799,6 +9817,10 @@ void __init sched_init(void)
 #endif /* SMP */
 
 	perf_event_init();
+
+#ifdef CONFIG_SCHED_RMS_POLICY
+    init_rms_event_log();
+#endif
 
 	scheduler_running = 1;
 }

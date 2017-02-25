@@ -2078,11 +2078,14 @@ endmenu
 config HAVE_ATOMIC_IOMAP
 	def_bool y
 	depends on X86_32
-menu "RMS scheduler"		
-config SCHED_RMS_POLICY		
-	bool "RMS scheduling policy"		
-	default y		
+
+menu "RMS scheduler"
+
+config SCHED_RMS_POLICY
+    bool "RMS scheduling policy"
+    default y
 endmenu
+
 source "net/Kconfig"
 
 source "drivers/Kconfig"

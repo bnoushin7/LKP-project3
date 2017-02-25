@@ -2634,4 +2634,38 @@ static inline unsigned long rlimit_max(unsigned int limit)
 
 #endif /* __KERNEL__ */
 
+#ifdef CONFIG_SCHED_RMS_POLICY
+
+#define RMS_ENQUEUE 1
+#define RMS_DEQUEUE 2
+#define RMS_CONTEXT_SWITCH 3
+#define RMS_DEBUG 4
+
+/* NOTE: RMS_MSG_SIZE is chosen such that struct rms_event is exactly
+ *       256 bytes (a multiple of 2) on a 64-bit platform. */
+#define RMS_MSG_SIZE 244
+
+struct rms_event {
+    int action;
+    unsigned long long timestamp;
+    char msg[RMS_MSG_SIZE];
+};
+
+/* Note: RMS_MAX_EVENTS is chosen such that struct rms_event_log is
+ *       a multiple-of-2 bytes long on a 64-bit platform. */
+#define RMS_MAX_EVENTS 8191
+
+struct rms_event_log {
+    struct rms_event rms_events[RMS_MAX_EVENTS];
+    unsigned long long head;
+    unsigned long long tail;
+    long long padding[30];
+};
+
+void init_rms_event_log(void);
+struct rms_event_log *get_rms_event_log(void);
+void register_rms_event(unsigned long long t, char *m, int a);
+
+#endif /* CONFIG_SCHED_RMS_POLICY */
+
 #endif
