@@ -290,6 +290,7 @@ static void set_curr_task_rms(struct rq *rq)
 {
 }
 
+#ifdef CONFIG_SMP
 static int select_task_rq_rms(struct rq *rq, struct task_struct *p, int sd_flag,
                               int flags)
 {
@@ -299,7 +300,7 @@ static int select_task_rq_rms(struct rq *rq, struct task_struct *p, int sd_flag,
 		return smp_processor_id();
 	return task_cpu(p);
 }
-
+#endif
 static const struct sched_class rms_sched_class = {
 	.next 			= &rt_sched_class,
 	.enqueue_task		= enqueue_task_rms,
