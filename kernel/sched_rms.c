@@ -14,6 +14,7 @@ void init_rms_event_log(void)
 {
     char msg[RMS_MSG_SIZE];
     snprintf(msg, RMS_MSG_SIZE, "init_rms_event_log");
+    rms_event_log.head = rms_event_log.tail = 0;
     register_rms_event(sched_clock(), msg, RMS_DEBUG);
 }
 
@@ -32,8 +33,8 @@ void register_rms_event(unsigned long long t, char *m, int a)
 {
     if (rms_event_log.tail < RMS_MAX_EVENTS)
         _do_register_rms_event(t, m, a);
-    //else 
-    //    printk(KERN_ALERT "rms_event_log: full\n");
+    else 
+        printk(KERN_ALERT "rms_event_log: full\n");
 }
 
 /* 
@@ -213,6 +214,7 @@ static void enqueue_task_rms(struct rq *rq, struct task_struct *p, int wakeup,
                              bool head)
 {
 	struct rms_task *t=NULL;
+    char msg[RMS_MSG_SIZE];
 
 	if(p){
 		t=find_rms_task_list(&rq->rms_rq,p);
@@ -220,6 +222,9 @@ static void enqueue_task_rms(struct rq *rq, struct task_struct *p, int wakeup,
 		/*question*/	//t->absolute_deadline=sched_clock()+p->deadline;
 			insert_rms_task_rb_tree(&rq->rms_rq, t);
 			atomic_inc(&rq->rms_rq.nr_running);
+            snprintf(msg, RMS_MSG_SIZE, "Task (%d, %d), period %llu)",
+                     p->rms_id, p->pid, p->period);
+            register_rms_event(sched_clock(), msg, RMS_ENQUEUE);
 		}
 		else{
 			printk(KERN_ALERT "enqueue_task_rms\n");
@@ -232,10 +237,14 @@ static void enqueue_task_rms(struct rq *rq, struct task_struct *p, int wakeup,
 static void dequeue_task_rms(struct rq *rq, struct task_struct *p, int sleep)
 {
 	struct rms_task *t=NULL;
+    char msg[RMS_MSG_SIZE];
 
 	if(p){
 		t=find_rms_task_list(&rq->rms_rq,p);
 		if(t){
+            snprintf(msg, RMS_MSG_SIZE, "Task (%d, %d), period %llu)",
+                     p->rms_id, p->pid, p->period);
+            register_rms_event(sched_clock(), msg, RMS_DEQUEUE);
 			remove_rms_task_rb_tree(&rq->rms_rq, t);
 			atomic_dec(&rq->rms_rq.nr_running);
 			if(t->task->state==TASK_DEAD || t->task->state==EXIT_DEAD 

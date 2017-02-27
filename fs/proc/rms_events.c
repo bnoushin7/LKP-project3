@@ -19,9 +19,19 @@ static int rms_seq_show(struct seq_file *s, void *v)
 {
     struct rms_event *val_ptr = NULL; 
     val_ptr = (struct rms_event *) v;
-    
-    seq_printf(s, "@t=%llu: (%d) %s\n", val_ptr->timestamp, 
-               val_ptr->action, val_ptr->msg);
+
+    if (val_ptr->action == RMS_ENQUEUE)
+        seq_printf(s, "@t=%llu: ENQUEUED %s\n", val_ptr->timestamp, 
+                   val_ptr->msg);
+    else if (val_ptr->action == RMS_DEQUEUE)
+        seq_printf(s, "@t=%llu: DEQUEUED %s\n", val_ptr->timestamp, 
+                   val_ptr->msg);
+    else if (val_ptr->action == RMS_CONTEXT_SWITCH)
+        seq_printf(s, "@t=%llu: C_SWITCH %s\n", val_ptr->timestamp, 
+                   val_ptr->msg);
+    else
+        seq_printf(s, "@t=%llu: (%d)     %s\n", val_ptr->timestamp, 
+                   val_ptr->action, val_ptr->msg);
     return 0;
 }
 

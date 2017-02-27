@@ -2653,7 +2653,7 @@ struct rms_event {
 
 /* Note: RMS_MAX_EVENTS is chosen such that struct rms_event_log is
  *       a multiple-of-2 bytes long on a 64-bit platform. */
-#define RMS_MAX_EVENTS 8191
+#define RMS_MAX_EVENTS ((1<<14)-1)
 
 struct rms_event_log {
     struct rms_event rms_events[RMS_MAX_EVENTS];

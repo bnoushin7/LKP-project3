@@ -5637,14 +5637,14 @@ need_resched_nonpreemptible:
 #ifdef CONFIG_SCHED_RMS_POLICY
     if (prev->policy == SCHED_RMS || next->policy == SCHED_RMS) {
         if (prev->policy == SCHED_RMS && next->policy == SCHED_RMS) {
-            snprintf(msg, RMS_MSG_SIZE, "prev: %d, next: (%d)", prev->pid,
-                     next->pid);
+            snprintf(msg, RMS_MSG_SIZE, "prev: (%d, %d), next: (%d, %d)", 
+                     prev->rms_id, prev->pid, next->rms_id, next->pid);
         } else if (prev->policy == SCHED_RMS) {
-            snprintf(msg, RMS_MSG_SIZE, "prev: %d, next: (%d)", prev->pid,
-                     next->pid);
+            snprintf(msg, RMS_MSG_SIZE, "prev: (%d, %d), next: (%d, %d)", 
+                     prev->rms_id, prev->pid, next->rms_id, next->pid);
         } else {
-            snprintf(msg, RMS_MSG_SIZE, "prev: %d, next: (%d)", prev->pid,
-                     next->pid);
+            snprintf(msg, RMS_MSG_SIZE, "prev: (%d, %d), next: (%d, %d)", 
+                     prev->rms_id, prev->pid, next->rms_id, next->pid);
         }
         register_rms_event(sched_clock(), msg, RMS_CONTEXT_SWITCH);
     }
