@@ -524,7 +524,6 @@ static struct root_domain def_root_domain;
 #ifdef CONFIG_SCHED_RMS_POLICY		
 struct rms_task {		
 	struct rb_node rms_rb_node;		
-	unsigned long long period; /* next_period? */		
 	struct list_head rms_list_node;		
 	struct task_struct *task;		
 };		

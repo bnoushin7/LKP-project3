@@ -72,7 +72,6 @@ void add_rms_task_2_list(struct rms_rq *rq, struct task_struct *p)
 		if (new) {
 			rms_task=NULL;
 			new->task=p;
-			new->period=0; /* question  */
 			
             list_for_each(ptr,&rq->rms_list_head){
 				rms_task=list_entry(ptr,struct rms_task, rms_list_node);
@@ -153,7 +152,7 @@ void insert_rms_task_rb_tree(struct rms_rq *rq, struct rms_task *p)
 		parent=*node;
 		entry=rb_entry(parent, struct rms_task,rms_rb_node);
 		if (entry) {
-			if (p->period < entry->period) { /* question*/
+			if (p->task->period < entry->task->period) { /* question*/
 				node=&parent->rb_left;
 			} else {
 				node=&parent->rb_right;
@@ -198,7 +197,7 @@ static void check_preempt_curr_rms(struct rq *rq, struct task_struct *p,
 		if(t){
 			curr=find_rms_task_list(&rq->rms_rq,rq->curr);
 			if(curr){
-				if(t->period < curr->period) /* question  */
+				if(t->task->period < curr->task->period) /* question  */
 					resched_task(rq->curr);
 			}
 			else{
