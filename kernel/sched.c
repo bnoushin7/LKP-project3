@@ -5635,7 +5635,8 @@ need_resched_nonpreemptible:
 	next = pick_next_task(rq);
 
 #ifdef CONFIG_SCHED_RMS_POLICY
-    if (prev->policy == SCHED_RMS || next->policy == SCHED_RMS) {
+    if (((prev->policy == SCHED_RMS) || (next->policy == SCHED_RMS))
+        && (prev->rms_id != next->rms_id)) {
         if (prev->policy == SCHED_RMS && next->policy == SCHED_RMS) {
             snprintf(msg, RMS_MSG_SIZE, "prev: (%d, %d), next: (%d, %d)", 
                      prev->rms_id, prev->pid, next->rms_id, next->pid);

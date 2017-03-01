@@ -2653,7 +2653,7 @@ struct rms_event {
 
 /* Note: RMS_MAX_EVENTS is chosen such that struct rms_event_log is
  *       a multiple-of-2 bytes long on a 64-bit platform. */
-#define RMS_MAX_EVENTS ((1<<14)-1)
+#define RMS_MAX_EVENTS ((1<<13)-1)
 
 struct rms_event_log {
     struct rms_event rms_events[RMS_MAX_EVENTS];
@@ -2665,6 +2665,7 @@ struct rms_event_log {
 void init_rms_event_log(void);
 struct rms_event_log *get_rms_event_log(void);
 void register_rms_event(unsigned long long t, char *m, int a);
+void cleanup_rms_event_log(void);
 
 #endif /* CONFIG_SCHED_RMS_POLICY */
 
