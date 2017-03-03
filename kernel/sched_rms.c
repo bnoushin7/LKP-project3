@@ -64,24 +64,13 @@ void init_rms_rq(struct rms_rq *rms_rq)
 
 void add_rms_task_2_list(struct rms_rq *rq, struct task_struct *p)
 {
-	struct list_head *ptr=NULL;
-	struct rms_task *new=NULL, *rms_task=NULL;
+	struct rms_task *new = NULL;
 
 	if (rq && p) {
-		new=(struct rms_task *) kzalloc(sizeof(struct rms_task),GFP_KERNEL);
+		new = kzalloc(sizeof(*new), GFP_KERNEL);
 		if (new) {
-			rms_task=NULL;
 			new->task=p;
-			
-            list_for_each(ptr,&rq->rms_list_head){
-				rms_task=list_entry(ptr,struct rms_task, rms_list_node);
-				if (rms_task) {
-					if (new->task->rms_id < rms_task->task->rms_id) {
-						list_add(&new->rms_list_node,ptr);
-					}
-				}
-			}
-			list_add(&new->rms_list_node,&rq->rms_list_head);
+			list_add(&new->rms_list_node, &rq->rms_list_head);
 		}
 		else {
 			printk(KERN_ALERT "add_rms_task_2_list: kzalloc\n");
@@ -92,14 +81,14 @@ void add_rms_task_2_list(struct rms_rq *rq, struct task_struct *p)
 	}
 }
 
-struct rms_task * find_rms_task_list(struct rms_rq *rq, struct task_struct *p)
+struct rms_task *find_rms_task_list(struct rms_rq *rq, struct task_struct *p)
 {
-	struct list_head *ptr=NULL;
-	struct rms_task *rms_task=NULL;
+	struct list_head *ptr = NULL;
+	struct rms_task *rms_task = NULL;
 
-	if (rq && p) {
-		list_for_each(ptr,&rq->rms_list_head){
-			rms_task=list_entry(ptr,struct rms_task, rms_list_node);
+    if (rq && p) {
+		list_for_each(ptr, &rq->rms_list_head) {
+			rms_task = list_entry(ptr, struct rms_task, rms_list_node);
 			if (rms_task) {
 				if (rms_task->task->rms_id == p->rms_id) {
 					return rms_task;
@@ -113,12 +102,12 @@ struct rms_task * find_rms_task_list(struct rms_rq *rq, struct task_struct *p)
 
 void rem_rms_task_list(struct rms_rq *rq, struct task_struct *p)
 {
-	struct list_head *ptr=NULL,*next=NULL;
-	struct rms_task *rms_task=NULL;
+	struct list_head *ptr, *next;
+	struct rms_task *rms_task;
 
 	if (rq && p) {
-		list_for_each_safe(ptr,next,&rq->rms_list_head){
-			rms_task=list_entry(ptr,struct rms_task, rms_list_node);
+		list_for_each_safe(ptr, next, &rq->rms_list_head){
+			rms_task=list_entry(ptr, struct rms_task, rms_list_node);
 			if (rms_task) {
 				if (rms_task->task->rms_id == p->rms_id) {
 					list_del(ptr);
@@ -142,26 +131,26 @@ void remove_rms_task_rb_tree(struct rms_rq *rq, struct rms_task *p)
 
 void insert_rms_task_rb_tree(struct rms_rq *rq, struct rms_task *p)
 {
-	struct rb_node **node=NULL;
-	struct rb_node *parent=NULL;
-	struct rms_task *entry=NULL;
+	struct rb_node **node = NULL;
+	struct rb_node *parent = NULL;
+	struct rms_task *entry = NULL;
 
 	node=&rq->rms_rb_root.rb_node;
 
-	while (*node!=NULL) {
-		parent=*node;
-		entry=rb_entry(parent, struct rms_task,rms_rb_node);
+	while (*node != NULL) {
+		parent = *node;
+		entry = rb_entry(parent, struct rms_task, rms_rb_node);
 		if (entry) {
-			if (p->task->period < entry->task->period) { /* question*/
-				node=&parent->rb_left;
+			if (p->task->period < entry->task->period) {
+				node = &parent->rb_left;
 			} else {
-				node=&parent->rb_right;
+				node = &parent->rb_right;
 			}
 		}
 	}
 
-	rb_link_node(&p->rms_rb_node,parent,node);
-	rb_insert_color(&p->rms_rb_node,&rq->rms_rb_root);
+	rb_link_node(&p->rms_rb_node, parent,node);
+	rb_insert_color(&p->rms_rb_node, &rq->rms_rb_root);
 }
 
 struct rms_task * shortest_period_rms_task_rb_tree(struct rms_rq *rq)
@@ -169,16 +158,16 @@ struct rms_task * shortest_period_rms_task_rb_tree(struct rms_rq *rq)
 	struct rb_node *node=NULL;
 	struct rms_task *p=NULL;
 
-	node=rq->rms_rb_root.rb_node;
+	node = rq->rms_rb_root.rb_node;
 
-	if (node==NULL)
+	if (node == NULL)
 		return NULL;
 
-	while(node->rb_left!=NULL){
-		node=node->rb_left;
+	while (node->rb_left != NULL) {
+		node = node->rb_left;
 	}
 
-	p=rb_entry(node, struct rms_task,rms_rb_node);
+	p = rb_entry(node, struct rms_task, rms_rb_node);
 	return p;
 }
 
@@ -187,20 +176,20 @@ struct rms_task * shortest_period_rms_task_rb_tree(struct rms_rq *rq)
 static void check_preempt_curr_rms(struct rq *rq, struct task_struct *p, 
                                    int flags)
 {
-	struct rms_task *t=NULL,*curr=NULL;
+	struct rms_task *t, *curr;
 
-	if(rq->curr->policy!=SCHED_RMS){
+	if (rq->curr->policy != SCHED_RMS){
 		resched_task(rq->curr);
 	}
 	else{
-		t=shortest_period_rms_task_rb_tree(&rq->rms_rq);
-		if(t){
-			curr=find_rms_task_list(&rq->rms_rq,rq->curr);
-			if(curr){
-				if(t->task->period < curr->task->period) /* question  */
+		t = shortest_period_rms_task_rb_tree(&rq->rms_rq);
+		if (t) {
+			curr = find_rms_task_list(&rq->rms_rq, rq->curr);
+			if (curr) {
+				if(t->task->period < curr->task->period)
 					resched_task(rq->curr);
 			}
-			else{
+			else {
 				printk(KERN_ALERT "check_preempt_curr_rms\n");
 			}
 		}
@@ -211,10 +200,10 @@ static void check_preempt_curr_rms(struct rq *rq, struct task_struct *p,
 
 static struct task_struct *pick_next_task_rms(struct rq *rq)
 {
-	struct rms_task *t=NULL;
+	struct rms_task *t;
 
-	t=shortest_period_rms_task_rb_tree(&rq->rms_rq);
-	if(t){
+	t = shortest_period_rms_task_rb_tree(&rq->rms_rq);
+	if (t) {
 		return t->task;
 	}
 
@@ -226,13 +215,12 @@ static struct task_struct *pick_next_task_rms(struct rq *rq)
 static void enqueue_task_rms(struct rq *rq, struct task_struct *p, int wakeup, 
                              bool head)
 {
-	struct rms_task *t=NULL;
+	struct rms_task *t;
     char msg[RMS_MSG_SIZE];
 
-	if(p){
-		t=find_rms_task_list(&rq->rms_rq,p);
-		if(t){
-		/*question*/	//t->absolute_deadline=sched_clock()+p->deadline;
+	if (p) {
+		t = find_rms_task_list(&rq->rms_rq,p);
+		if (t) {
 			insert_rms_task_rb_tree(&rq->rms_rq, t);
 			atomic_inc(&rq->rms_rq.nr_running);
             snprintf(msg, RMS_MSG_SIZE, "Task (%d, %d), period %llu)",
@@ -249,33 +237,33 @@ static void enqueue_task_rms(struct rq *rq, struct task_struct *p, int wakeup,
 
 static void dequeue_task_rms(struct rq *rq, struct task_struct *p, int sleep)
 {
-	struct rms_task *t=NULL;
+	struct rms_task *t = NULL;
     char msg[RMS_MSG_SIZE];
 
-	if(p){
-		t=find_rms_task_list(&rq->rms_rq,p);
-		if(t){
+	if (p) {
+		t = find_rms_task_list(&rq->rms_rq,p);
+		if(t) {
             snprintf(msg, RMS_MSG_SIZE, "Task (%d, %d), period %llu)",
                      p->rms_id, p->pid, p->period);
             register_rms_event(sched_clock(), msg, RMS_DEQUEUE);
 			remove_rms_task_rb_tree(&rq->rms_rq, t);
 			atomic_dec(&rq->rms_rq.nr_running);
-			if(t->task->state==TASK_DEAD || t->task->state==EXIT_DEAD 
-               || t->task->state==EXIT_ZOMBIE){
-				rem_rms_task_list(&rq->rms_rq,t->task);
+			//if (t->task->state == TASK_DEAD || t->task->state == EXIT_DEAD 
+            //    || t->task->state == EXIT_ZOMBIE){
+            if (t->task->exit_state == EXIT_DEAD
+                || t->task->exit_state == EXIT_ZOMBIE) {
+				rem_rms_task_list(&rq->rms_rq, t->task);
+                printk(KERN_INFO "Exit_state reached!\n");
 			}
 		}
-		else{
+		else {
 			printk(KERN_ALERT "dequeue_task_rms\n");
 		}
 	}
 }
 
-
-
 unsigned int get_rr_interval_rms(struct rq *rq, struct task_struct *task)
 {
-    /*question*/
 	/*
      * Time slice is 0 for SCHED_FIFO tasks
      */
@@ -312,28 +300,17 @@ static void set_curr_task_rms(struct rq *rq)
 {
 }
 
-#ifdef CONFIG_SMP
-static int select_task_rq_rms(struct rq *rq, struct task_struct *p, int sd_flag,
-                              int flags)
-{
-    /*question*/
-    //	struct rq *rq = task_rq(p);
-	if (sd_flag != SD_BALANCE_WAKE)
-		return smp_processor_id();
-	return task_cpu(p);
-}
-#endif
 static const struct sched_class rms_sched_class = {
-	.next 			= &rt_sched_class,
+	.next 			    = &rt_sched_class,
 	.enqueue_task		= enqueue_task_rms,
 	.dequeue_task		= dequeue_task_rms,
 	.check_preempt_curr	= check_preempt_curr_rms,
 	.pick_next_task		= pick_next_task_rms,
 	.put_prev_task		= put_prev_task_rms,
-	.set_curr_task          = set_curr_task_rms,
-	.task_tick		= task_tick_rms,
+	.set_curr_task      = set_curr_task_rms,
+	.task_tick		    = task_tick_rms,
 	.switched_to		= switched_to_rms,
-	.yield_task		= yield_task_rms,
+	.yield_task		    = yield_task_rms,
 	.get_rr_interval	= get_rr_interval_rms,
 	.prio_changed		= prio_changed_rms,
 };
