@@ -52,7 +52,7 @@ struct sched_param {
 	int sched_priority;
 
 #ifdef	CONFIG_SCHED_RMS_POLICY
-	unsigned int	rms_id;
+	long	rms_id;
 	unsigned long long period;
 #endif
 
@@ -1235,7 +1235,7 @@ struct rcu_node;
 struct task_struct {
 	
 #ifdef	CONFIG_SCHED_RMS_POLICY
-	unsigned int	rms_id;
+	long	rms_id;
 	unsigned long long period;
 #endif
 

@@ -5637,13 +5637,13 @@ need_resched_nonpreemptible:
     if (((prev->policy == SCHED_RMS) || (next->policy == SCHED_RMS))
         && (prev->rms_id != next->rms_id)) {
         if (prev->policy == SCHED_RMS && next->policy == SCHED_RMS) {
-            snprintf(msg, RMS_MSG_SIZE, "prev: (%d, %d), next: (%d, %d)", 
+            snprintf(msg, RMS_MSG_SIZE, "prev: (%ld, %d), next: (%ld, %d)", 
                      prev->rms_id, prev->pid, next->rms_id, next->pid);
         } else if (prev->policy == SCHED_RMS) {
-            snprintf(msg, RMS_MSG_SIZE, "prev: (%d, %d), next: (%d, %d)", 
+            snprintf(msg, RMS_MSG_SIZE, "prev: (%ld, %d), next: (%ld, %d)", 
                      prev->rms_id, prev->pid, next->rms_id, next->pid);
         } else {
-            snprintf(msg, RMS_MSG_SIZE, "prev: (%d, %d), next: (%d, %d)", 
+            snprintf(msg, RMS_MSG_SIZE, "prev: (%ld, %d), next: (%ld, %d)", 
                      prev->rms_id, prev->pid, next->rms_id, next->pid);
         }
         register_rms_event(sched_clock(), msg, RMS_CONTEXT_SWITCH);
@@ -6497,10 +6497,13 @@ recheck:
 	}
 
 #ifdef CONFIG_SCHED_RMS_POLICY		
-	if(policy==SCHED_RMS){		
+	if (policy==SCHED_RMS) {		
 		p->period = param->period;		
 		p->rms_id = param->rms_id;		
-	}		
+	} else {
+        p->period = 0;
+        p->rms_id = -1;
+    }
 #endif
 
 	if (user) {

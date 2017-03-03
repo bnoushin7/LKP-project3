@@ -223,7 +223,7 @@ static void enqueue_task_rms(struct rq *rq, struct task_struct *p, int wakeup,
 		if (t) {
 			insert_rms_task_rb_tree(&rq->rms_rq, t);
 			atomic_inc(&rq->rms_rq.nr_running);
-            snprintf(msg, RMS_MSG_SIZE, "Task (%d, %d), period %llu)",
+            snprintf(msg, RMS_MSG_SIZE, "Task (%ld, %d), period %llu)",
                      p->rms_id, p->pid, p->period);
             register_rms_event(sched_clock(), msg, RMS_ENQUEUE);
 		}
@@ -243,17 +243,14 @@ static void dequeue_task_rms(struct rq *rq, struct task_struct *p, int sleep)
 	if (p) {
 		t = find_rms_task_list(&rq->rms_rq,p);
 		if(t) {
-            snprintf(msg, RMS_MSG_SIZE, "Task (%d, %d), period %llu)",
+            snprintf(msg, RMS_MSG_SIZE, "Task (%ld, %d), period %llu)",
                      p->rms_id, p->pid, p->period);
             register_rms_event(sched_clock(), msg, RMS_DEQUEUE);
 			remove_rms_task_rb_tree(&rq->rms_rq, t);
 			atomic_dec(&rq->rms_rq.nr_running);
-			//if (t->task->state == TASK_DEAD || t->task->state == EXIT_DEAD 
-            //    || t->task->state == EXIT_ZOMBIE){
             if (t->task->exit_state == EXIT_DEAD
                 || t->task->exit_state == EXIT_ZOMBIE) {
 				rem_rms_task_list(&rq->rms_rq, t->task);
-                printk(KERN_INFO "Exit_state reached!\n");
 			}
 		}
 		else {
